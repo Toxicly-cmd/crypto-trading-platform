@@ -16,17 +16,29 @@ export default function Home() {
       {/* Navigation */}
       <nav className="border-b border-gray-900 py-6">
         <div className="container flex justify-between items-center">
-          <div className="text-3xl font-bold tracking-tighter font-mono">CRYPTOTRADE</div>
+          <div className="flex items-center gap-12">
+            <div 
+              className="text-3xl font-bold tracking-tighter font-mono cursor-pointer"
+              onClick={() => navigate("/")}
+            >
+              CRYPTOTRADE
+            </div>
+            {isAuthenticated && (
+              <div className="hidden md:flex gap-8 font-mono text-sm uppercase tracking-widest">
+                <button onClick={() => navigate("/dashboard")} className="hover:text-cyan-400 transition-colors">Portfolio</button>
+                <button onClick={() => navigate("/trading")} className="hover:text-magenta-400 transition-colors">Trade</button>
+                <button onClick={() => navigate("/wallet")} className="hover:text-lime-400 transition-colors">Wallet</button>
+              </div>
+            )}
+          </div>
           <div className="flex gap-4">
             {isAuthenticated ? (
-              <>
-                <Button
-                  onClick={() => navigate("/dashboard")}
-                  className="btn-brutalist"
-                >
-                  Dashboard
-                </Button>
-              </>
+              <Button
+                onClick={() => navigate("/dashboard")}
+                className="btn-brutalist"
+              >
+                Dashboard
+              </Button>
             ) : (
               <a href={getLoginUrl()}>
                 <Button className="btn-brutalist">Sign In</Button>
@@ -58,10 +70,10 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
             {isAuthenticated ? (
               <Button
-                onClick={() => navigate("/dashboard")}
+                onClick={() => navigate("/trading")}
                 className="btn-brutalist text-lg px-8 py-4"
               >
-                Open Dashboard <ArrowRight className="ml-2" size={20} />
+                Start Trading <ArrowRight className="ml-2" size={20} />
               </Button>
             ) : (
               <a href={getLoginUrl()}>

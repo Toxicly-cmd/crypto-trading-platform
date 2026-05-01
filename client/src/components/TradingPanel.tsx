@@ -45,11 +45,21 @@ export default function TradingPanel({ symbol, currentPrice }: TradingPanelProps
     }
   };
 
-  // Mock chart data
-  const mockChartData = Array.from({ length: 24 }, (_, i) => ({
-    time: `${i}:00`,
-    price: currentPrice + (Math.random() - 0.5) * 1000,
-  }));
+  // Mock chart data with OHLC for candlesticks
+  const mockChartData = Array.from({ length: 24 }, (_, i) => {
+    const open = currentPrice + (Math.random() - 0.5) * 2000;
+    const close = open + (Math.random() - 0.5) * 1500;
+    const high = Math.max(open, close) + Math.random() * 500;
+    const low = Math.min(open, close) - Math.random() * 500;
+    return {
+      time: `${i}:00`,
+      price: close,
+      open,
+      close,
+      high,
+      low,
+    };
+  });
 
   return (
     <div className="grid md:grid-cols-3 gap-6">
@@ -70,24 +80,81 @@ export default function TradingPanel({ symbol, currentPrice }: TradingPanelProps
             <div className="text-sm text-green-400">+5.2% (24h)</div>
           </div>
 
-          <div className="w-full h-64 bg-gray-800 rounded">
+          <div className="w-full h-80 bg-gray-900 rounded border border-gray-800 p-2">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={mockChartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                <XAxis dataKey="time" stroke="#666" />
-                <YAxis stroke="#666" />
-                <Tooltip
-                  contentStyle={{ backgroundColor: "#1a1a1a", border: "1px solid #333" }}
-                  labelStyle={{ color: "#fff" }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="price"
-                  stroke="#00ffff"
-                  dot={false}
-                  strokeWidth={2}
-                />
-              </LineChart>
+              {chartType === "line" ? (
+                <LineChart data={mockChartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                  <XAxis dataKey="time" stroke="#666" tick={{fontSize: 12}} />
+                  <YAxis stroke="#666" domain={["auto", "auto"]} tick={{fontSize: 12}} tickFormatter={(v) => `₹${(v/1000).toFixed(0)}k`} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: "#111", border: "1px solid #333", borderRadius: "4px" }}
+                    itemStyle={{ color: "#00ffff" }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="price"
+                    stroke="#00ffff"
+                    dot={false}
+                    strokeWidth={3}
+                    animationDuration={1000}
+                  />
+                </LineChart>
+              ) : (
+                <LineChart data={mockChartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                  <XAxis dataKey="time" stroke="#666" tick={{fontSize: 12}} />
+                  <YAxis stroke="#666" domain={["auto", "auto"]} tick={{fontSize: 12}} tickFormatter={(v) => `₹${(v/1000).toFixed(0)}k`} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: "#111", border: "1px solid #333", borderRadius: "4px" }}
+                    content={({ payload, label }) => {
+                      if (payload && payload.length > 0) {
+                        const data = payload[0].payload;
+                        return (
+                          <div className="bg-black border border-gray-800 p-3 rounded font-mono text-xs">
+                            <div className="text-gray-400 mb-1">{label}</div>
+                            <div className="flex gap-4">
+                              <span className="text-green-400">O: {data.open.toFixed(0)}</span>
+                              <span className="text-red-400">C: {data.close.toFixed(0)}</span>
+                            </div>
+                            <div className="flex gap-4 mt-1">
+                              <span className="text-gray-300">H: {data.high.toFixed(0)}</span>
+                              <span className="text-gray-300">L: {data.low.toFixed(0)}</span>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  {/* High/Low Line */}
+                  <Line dataKey="high" stroke="#666" dot={false} strokeWidth={1} connectNulls />
+                  <Line dataKey="low" stroke="#666" dot={false} strokeWidth={1} connectNulls />
+                  {/* Simplified Candlestick visualization using customized dots or bars */}
+                  {/* For simplicity in a mock, we use colored dots for now or a specialized render */}
+                  <Line 
+                    type="step" 
+                    dataKey="close" 
+                    stroke={(d: any) => d.close > d.open ? "#22c55e" : "#ef4444"} 
+                    strokeWidth={0}
+                    dot={(props: any) => {
+                      const { cx, cy, payload } = props;
+                      const isUp = payload.close > payload.open;
+                      const color = isUp ? "#22c55e" : "#ef4444";
+                      return (
+                        <rect 
+                          key={props.index}
+                          x={cx - 4} 
+                          y={isUp ? cy : cy - Math.abs(payload.close - payload.open) / 100} 
+                          width={8} 
+                          height={Math.max(2, Math.abs(payload.close - payload.open) / 100)} 
+                          fill={color} 
+                        />
+                      );
+                    }}
+                  />
+                </LineChart>
+              )}
             </ResponsiveContainer>
           </div>
         </Card>

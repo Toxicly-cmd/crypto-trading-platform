@@ -7,13 +7,53 @@ let _db: ReturnType<typeof drizzle> | null = null;
 
 // Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
-  if (!_db && process.env.DATABASE_URL) {
+  const isDev = process.env.NODE_ENV === "development";
+  const dbUrl = process.env.DATABASE_URL;
+
+  if (!_db && dbUrl && dbUrl !== "mock") {
     try {
-      _db = drizzle(process.env.DATABASE_URL);
+      _db = drizzle(dbUrl);
     } catch (error) {
-      console.warn("[Database] Failed to connect:", error);
+      console.warn("[Database] Failed to initialize drizzle:", error);
       _db = null;
     }
+  }
+  
+  if (!_db && process.env.NODE_ENV === "development") {
+    // Return a mock object to avoid crashes in dev mode
+    return {
+      select: () => ({
+        from: (table: any) => {
+          const tableName = table?.name || (table as any)[Symbol.for('drizzle:Name')] || '';
+          console.log(`[MockDB] Matching table: "${tableName}"`);
+          return {
+            where: () => ({
+              limit: () => {
+                if (table === portfolios) {
+                  return Promise.resolve([{ id: 1, userId: 1, totalInvested: "100000", totalValue: "125000", totalProfitLoss: "25000" }]);
+                }
+                if (table === users) {
+                  return Promise.resolve([{ id: 1, openId: "mock-user-id", name: "Toxic User", email: "toxic@example.com", role: "user" }]);
+                }
+                if (table === holdings) {
+                  return Promise.resolve([
+                    { id: 1, userId: 1, symbol: "BTC", quantity: "0.5", averageBuyPrice: "4500000", currentPrice: "5200000", totalValue: "2600000", profitLoss: "350000" },
+                    { id: 2, userId: 1, symbol: "ETH", quantity: "5.0", averageBuyPrice: "250000", currentPrice: "280000", totalValue: "1400000", profitLoss: "150000" }
+                  ]);
+                }
+                return Promise.resolve([]);
+              },
+              orderBy: () => ({
+                limit: () => Promise.resolve([])
+              })
+            })
+          };
+        }
+      }),
+      insert: () => ({ values: () => ({ onDuplicateKeyUpdate: () => Promise.resolve() }), onDuplicateKeyUpdate: () => Promise.resolve() }),
+      delete: () => ({ where: () => Promise.resolve() }),
+      update: () => ({ set: () => ({ where: () => Promise.resolve() }) }),
+    } as any;
   }
   return _db;
 }

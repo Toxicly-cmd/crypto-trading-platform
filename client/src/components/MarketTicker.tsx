@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { TrendingUp, TrendingDown } from "lucide-react";
+import { useLocation } from "wouter";
 
 interface CoinData {
   id: string;
@@ -16,6 +17,8 @@ interface CoinData {
 export default function MarketTicker() {
   const [coins, setCoins] = useState<CoinData[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const [, navigate] = useLocation();
 
   const topCoinsQuery = trpc.market.getTopCoins.useQuery();
 
@@ -56,6 +59,7 @@ export default function MarketTicker() {
           {coins.map((coin) => (
             <div
               key={coin.id}
+              onClick={() => navigate("/trading")}
               className="flex-shrink-0 bg-gray-900 border border-gray-800 p-4 rounded hover:border-cyan-400 transition-colors cursor-pointer min-w-max"
             >
               <div className="flex items-center gap-3 mb-2">

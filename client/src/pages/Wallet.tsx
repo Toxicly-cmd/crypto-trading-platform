@@ -23,21 +23,6 @@ export default function Wallet() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Header */}
-      <div className="border-b border-gray-900 py-6">
-        <div className="container flex items-center gap-4">
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="hover:text-cyan-400 transition-colors"
-          >
-            <ArrowLeft size={24} />
-          </button>
-          <div>
-            <h1 className="text-4xl font-bold font-mono tracking-tighter">WALLET & ALERTS</h1>
-            <p className="text-gray-400 mt-2">Manage deposits, addresses, and notifications</p>
-          </div>
-        </div>
-      </div>
 
       {/* Tabs */}
       <section className="py-12">

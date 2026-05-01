@@ -150,26 +150,50 @@ export const appRouter = router({
         currency: z.string().default("INR"),
       }))
       .mutation(async ({ ctx, input }) => {
-        // This would integrate with Razorpay API
-        // For now, returning a mock order
-        const orderId = `order_${Date.now()}`;
-        
-        const database = await db.getDb();
-        if (!database) throw new Error("Database not available");
-        
-        await database.insert(payments).values({
-          userId: ctx.user.id,
-          razorpayOrderId: orderId,
-          amount: input.amount,
-          currency: input.currency,
-          status: "created",
-        });
+        const keyId = process.env.RAZORPAY_KEY_ID;
+        const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
-        return {
-          orderId,
-          amount: input.amount,
-          currency: input.currency,
-        };
+        if (!keyId || !keySecret) {
+          // Fallback for development if keys are missing
+          console.warn("[Razorpay] Missing API keys, using mock order");
+          const orderId = `order_${Date.now()}`;
+          return { orderId, amount: input.amount, currency: input.currency, key: "mock" };
+        }
+
+        try {
+          const Razorpay = (await import("razorpay")).default;
+          const razorpay = new Razorpay({
+            key_id: keyId,
+            key_secret: keySecret,
+          });
+
+          const order = await razorpay.orders.create({
+            amount: Math.round(parseFloat(input.amount) * 100), // Razorpay expects amount in paise
+            currency: input.currency,
+            receipt: `receipt_${Date.now()}`,
+          });
+
+          const database = await db.getDb();
+          if (database) {
+            await database.insert(payments).values({
+              userId: ctx.user.id,
+              razorpayOrderId: order.id,
+              amount: input.amount,
+              currency: input.currency,
+              status: "created",
+            });
+          }
+
+          return {
+            orderId: order.id,
+            amount: input.amount,
+            currency: input.currency,
+            key: keyId,
+          };
+        } catch (error) {
+          console.error("[Razorpay] Order creation failed:", error);
+          throw new Error("Failed to create payment order");
+        }
       }),
 
     getPayments: protectedProcedure

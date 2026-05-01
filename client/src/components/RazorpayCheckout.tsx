@@ -35,17 +35,49 @@ export default function RazorpayCheckout({ onSuccess, onError }: RazorpayCheckou
         currency: "INR",
       });
 
-      // In a real implementation, this would open Razorpay checkout
-      // For now, we'll simulate a successful payment
-      setTimeout(() => {
-        setStatus("success");
-        setMessage(`Payment initiated for ₹${amount}. Order ID: ${order.orderId}`);
-        setAmount("");
-        onSuccess?.(order.orderId);
-      }, 2000);
+      if (order.key === "mock") {
+        // Fallback for development if keys are missing
+        setTimeout(() => {
+          setStatus("success");
+          setMessage(`[MOCK] Payment successful for ₹${amount}. Order ID: ${order.orderId}`);
+          setAmount("");
+          onSuccess?.(order.orderId);
+        }, 1500);
+        return;
+      }
+
+      const options = {
+        key: order.key,
+        amount: Math.round(parseFloat(amount) * 100),
+        currency: order.currency,
+        name: "CryptoTrade",
+        description: "Crypto Purchase",
+        order_id: order.orderId,
+        handler: function (response: any) {
+          setStatus("success");
+          setMessage(`Payment successful! Payment ID: ${response.razorpay_payment_id}`);
+          setAmount("");
+          onSuccess?.(order.orderId);
+        },
+        prefill: {
+          name: "Toxic User",
+          email: "toxic@example.com",
+        },
+        theme: {
+          color: "#00ffff",
+        },
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.on("payment.failed", function (response: any) {
+        setStatus("error");
+        setMessage(`Payment failed: ${response.error.description}`);
+        onError?.(response.error.description);
+      });
+      rzp.open();
     } catch (error) {
       setStatus("error");
-      setMessage("Payment initiation failed. Please try again.");
+      setMessage("Payment initiation failed. Please check your keys.");
       onError?.("Payment failed");
       console.error("Payment error:", error);
     } finally {

@@ -32,20 +32,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Header */}
-      <div className="border-b border-gray-900 py-6">
-        <div className="container flex justify-between items-center">
-          <div>
-            <h1 className="text-4xl font-bold font-mono tracking-tighter">DASHBOARD</h1>
-            <p className="text-gray-400 mt-2">Welcome back, {user?.name}</p>
-          </div>
-          <div className="flex gap-4">
-            <Button className="btn-neon">Deposit</Button>
-            <Button className="btn-brutalist">Withdraw</Button>
-          </div>
-        </div>
-      </div>
-
       {/* Market Ticker */}
       <MarketTicker />
 
@@ -122,7 +108,12 @@ export default function Dashboard() {
             <div className="text-center py-12 border-2 border-dashed border-gray-800 rounded">
               <Wallet size={48} className="mx-auto mb-4 text-gray-600" />
               <p className="text-gray-400 mb-4">No holdings yet</p>
-              <Button className="btn-brutalist">Start Trading</Button>
+              <Button 
+                onClick={() => navigate("/trading")}
+                className="btn-brutalist"
+              >
+                Start Trading
+              </Button>
             </div>
           )}
         </div>
@@ -182,6 +173,7 @@ export default function Dashboard() {
             {topCoins.slice(0, 5).map((coin: any) => (
               <div
                 key={coin.id}
+                onClick={() => navigate("/trading")}
                 className="bg-gray-900 border border-gray-800 p-4 rounded hover:border-cyan-400 transition-colors cursor-pointer"
               >
                 <div className="flex items-center gap-2 mb-3">

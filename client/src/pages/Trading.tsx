@@ -24,23 +24,6 @@ export default function Trading() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Header */}
-      <div className="border-b border-gray-900 py-6">
-        <div className="container flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate("/dashboard")}
-              className="hover:text-cyan-400 transition-colors"
-            >
-              <ArrowLeft size={24} />
-            </button>
-            <div>
-              <h1 className="text-4xl font-bold font-mono tracking-tighter">TRADING</h1>
-              <p className="text-gray-400 mt-1">Professional trading interface</p>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Coin Selector */}
       <div className="bg-gray-900 border-b border-gray-800 py-4 overflow-x-auto">
