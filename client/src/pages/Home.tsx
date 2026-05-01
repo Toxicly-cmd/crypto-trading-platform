@@ -40,9 +40,12 @@ export default function Home() {
                 Dashboard
               </Button>
             ) : (
-              <a href={getLoginUrl()}>
-                <Button className="btn-brutalist">Sign In</Button>
-              </a>
+              <Button 
+                onClick={() => window.location.href = getLoginUrl()}
+                className="btn-brutalist"
+              >
+                Sign In
+              </Button>
             )}
           </div>
         </div>
@@ -76,11 +79,20 @@ export default function Home() {
                 Start Trading <ArrowRight className="ml-2" size={20} />
               </Button>
             ) : (
-              <a href={getLoginUrl()}>
-                <Button className="btn-brutalist text-lg px-8 py-4">
+              <>
+                <Button 
+                  onClick={() => window.location.href = getLoginUrl()}
+                  className="btn-brutalist text-lg px-8 py-4"
+                >
                   Start Trading <ArrowRight className="ml-2" size={20} />
                 </Button>
-              </a>
+                <Button 
+                  onClick={() => window.location.href = getLoginUrl()}
+                  className="btn-brutalist-outline text-lg px-8 py-4"
+                >
+                  Sign Up
+                </Button>
+              </>
             )}
             <Button className="btn-brutalist-outline text-lg px-8 py-4">
               Learn More
