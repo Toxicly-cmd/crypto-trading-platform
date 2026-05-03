@@ -247,7 +247,8 @@ class SDKServer {
   async getUserInfoWithJwt(
     jwtToken: string
   ): Promise<GetUserInfoWithJwtResponse> {
-    if (process.env.NODE_ENV === "development" || jwtToken.includes(".") === false || jwtToken.startsWith("mock-")) {
+    const isMock = process.env.NODE_ENV === "development" || process.env.MOCK_MODE === "true";
+    if (isMock || jwtToken.includes(".") === false || jwtToken.startsWith("mock-")) {
       return {
         openId: "mock-user-id",
         name: "Toxic User",
@@ -278,8 +279,9 @@ class SDKServer {
   }
 
   async authenticateRequest(req: Request): Promise<User> {
-    if (process.env.NODE_ENV === "development") {
-      console.log("[Auth] Bypassing auth for development mode");
+    const isMock = process.env.NODE_ENV === "development" || process.env.MOCK_MODE === "true";
+    if (isMock) {
+      console.log("[Auth] Bypassing auth for mock mode");
       const mockUser = await db.getUserByOpenId("mock-user-id");
       if (mockUser) return mockUser;
       console.warn("[Auth] Mock user not found in DB!");

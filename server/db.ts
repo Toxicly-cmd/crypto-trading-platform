@@ -7,7 +7,7 @@ let _db: ReturnType<typeof drizzle> | null = null;
 
 // Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
-  const isDev = process.env.NODE_ENV === "development";
+  const isMock = process.env.NODE_ENV === "development" || process.env.MOCK_MODE === "true" || process.env.DATABASE_URL === "mock";
   const dbUrl = process.env.DATABASE_URL;
 
   if (!_db && dbUrl && dbUrl !== "mock") {
@@ -19,7 +19,7 @@ export async function getDb() {
     }
   }
   
-  if (!_db && process.env.NODE_ENV === "development") {
+  if (!_db && isMock) {
     // Return a mock object to avoid crashes in dev mode
     return {
       select: () => ({
